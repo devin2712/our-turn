@@ -329,29 +329,33 @@ const getMyTurnAvailabilities = async (user) => {
   }, {});
 
   // For each availabile location, iteratively query the availability endpoint to collect how many days are available.
-  return await Promise.all(
-    availableLocations
-      .map(async (loc) => {
-        const locationStatus = await myTurnAvailabilityCheckForLocation(
-          loc.vaccineData,
-          loc.extId
-        );
+  const locations = await Promise.all(
+    availableLocations.map(async (loc) => {
+      const locationStatus = await myTurnAvailabilityCheckForLocation(
+        loc.vaccineData,
+        loc.extId
+      );
 
-        if (Object.entries(locationStatus).length > 0) {
-          return Promise.resolve({
-            locationName: locationDefinitions[locationStatus.locationId].name,
-            locationAddress:
-              locationDefinitions[locationStatus.locationId].address,
-            availability: locationStatus.availability,
-            numOfDays: locationStatus.availability.filter((d) => d.available)
-              .length,
-          });
-        } else {
-          return Promise.resolve(null);
-        }
-      })
-      .filter((obj) => obj)
+      const availableLocationSlots = locationStatus.availability.filter(
+        (a) => a.available
+      );
+
+      if (availableLocationSlots > 0) {
+        return Promise.resolve({
+          locationName: locationDefinitions[locationStatus.locationId].name,
+          locationAddress:
+            locationDefinitions[locationStatus.locationId].address,
+          availability: locationStatus.availability,
+          numOfDays: availableLocationSlots,
+        });
+      } else {
+        return Promise.resolve(null);
+      }
+    })
   );
+
+  // Filter by non-null objects. Only return locations with data.
+  return locations.filter((obj) => obj);
 };
 
 // Process a phone notification alert for a single user (if needed)
