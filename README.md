@@ -1,10 +1,18 @@
 # Covid-19 Vaccine Appointment Notification System
 
-Twilio Serverless Function to monitor vaccine appointment availability changes by querying [MA Covid Vaccines](https://www.macovidvaccines.com/) scraper endpoint.
-
 ## Overview
 
-![Service Diagram](assets/services.png)
+![Service Diagram](generic.png)
+
+## Projects
+
+There are multiple variations depending on the state or vaccination repository being monitored. Navigate to the sub-project's README for more information. 
+
+[California MyTurn](./california-myturn) - `california-myturn`
+
+[Massachusetts Covid Vaccines](./massachusetts-macovidvaccines) - `massachusetts-macovidvaccines`
+
+The architecture and processes defined in this document are shared and common between the sub-projects.
 
 ### Process
 
@@ -13,9 +21,9 @@ Per a cron schedule, cronhooks makes a call to a webhook hosted by Twilio server
 
 ### 2. Twilio Serverless Function Invocation
 Twilio function is invocated and a script runs to:
-1. Check MA Covid Vaccines for the latest status
+1. Check the designated vaccine website for the latest availability status
 2. Query Airtable for list of users
-3. For each user, filter availabilities based on their preferences.
+3. For each user, parse availabilities based on their preferences (desired locations to monitor or based on their user profile and thus, eligibility).
 4. If there are availabilities, trigger a phone & email notification if enough time has passed since we last notified them (based on their preference). 
     - Twilio API to Call
     - SendGrid API to Email
@@ -23,25 +31,14 @@ Twilio function is invocated and a script runs to:
 
 ## "DB" Schema
 
-User Object
-
-| Column      | Airtable Field Name | Description |
-| ----------- | ----------- | ----------- |
-| User Name      | `Name`       | Name of user is used in the phone call speech script |
-| User Email   | `Email`        | SendGrid recipient email destination |
-| Phone Number   | `Phone Number`        | Twilio calls this number to notify |
-| Last Call   | `Last Call`        | DateTime of when we last called the user's phone number |
-| Last Email   | `Last Email`        | DateTime of when we last emailed the user |
-| Call Time Threshold   | `Min Minutes Between Calls`        | User preference for how many minutes should pass before we call them again. (We can check for available updates every 5 minutes and call a user if something becomes available but don't call them again until an hour later, if this value is set to `60`. This prevents repeated calls every time the cron job runs if there are consistently available appointments.) |
-| Email Time Threshold   | `Min Minutes Between Emails`        | Similar to Call Time Threshold, but for emails. |
-| Locations   | `Locations`        | Array of strings of the name of locations this user wants to monitor |
+The Airtable DB schema is different between state variations due to different use cases. Refer to the relevant sub-projects for details.
 
 ## External Services
 
 ### Twilio Serverless Functions
 https://www.twilio.com/docs/runtime/functions
 
-Twilio Functions are used to query the Vaccine Availability endpoint, gather a list of users, filter vaccine availabilities based on user preferences, and call out to external services (Twilio, SendGrid) to trigger notifications if availabilities open that match the user's clinic criteria and notification preferences.
+Twilio Functions are used to query the external vaccine availabilities endpoint, gather a list of users, filter vaccine availabilities based on user preferences, and call out to external services (Twilio, SendGrid) to trigger notifications if availabilities open that match the user's clinic criteria and notification preferences.
 
 We write the function in Node/Javascript as a "serverless function" and Twilio exposes an endpoint that can be used to trigger the function on-demand.
 
@@ -88,6 +85,15 @@ To develop and run the function locally, update the sample `.env` file with your
 Ensure you have `npm` and `node` on your machine. Twilio Serverless production runs node 10.x so it would be better to use [nvm](https://github.com/nvm-sh/nvm) to ensure you're running 10.x locally to develop in line with how functions are executed in Twilio prod environments. 
 
 ### Start Twilio Serverless Toolkit Development Server
+#### 1) Navigate into the relevant project 
+`cd california-myturn` or `cd massachusetts-macovidvaccines`
+
+#### 2) npm 
+```
+npm i
+```
+
+#### 3) Start Server
 Once you run `npm i`, you can leverage the `twilio-run` dev dependency to run a local server that mimics the Twilio serverless function environment. You don't need the full `twilio-cli` tool for the purposes of this project.
 
 Start the Twilio Development Server
@@ -98,6 +104,9 @@ node_modules/.bin/twilio-run
 Use an API program ([Postman](https://www.postman.com/), [Insomnia](https://insomnia.rest/), etc.) or just a cURL command to trigger the function endpoint
 ```
 curl --location --request GET 'http://localhost:3000/ma-notify'
+```
+```
+curl --location --request GET 'http://localhost:3000/ca-myturn-notify'
 ```
 
 The cURL command should just return a basic "Success" payload

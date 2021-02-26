@@ -228,7 +228,7 @@ const processNotification = async (
   // Trigger notification if time window threshold has been met and there are availabilities.
   const hasAvailabilities = userLocationAvailabilities.length > 0;
   const timeThresholdMet =
-    (deltaInMinutes > userInfo[thresholdFieldName[notificationType]]) || (context.DEBUG_MODE === "true");
+    (deltaInMinutes > userInfo[thresholdFieldName[notificationType]]) || context.DEBUG_MODE;
 
   if (hasAvailabilities && timeThresholdMet) {
     switch (notificationType) {

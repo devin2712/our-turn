@@ -1,0 +1,2 @@
+﻿name,email,phone,last_call,last_email,min_call_threshold,min_email_threshold,age_range,county,industry,lat,long
+Corona,covid@example.com,+14151234567,2/26/2021 09:00,2/26/2021 09:00,60,30,18 - 49,Alameda,Education and childcare,37.746080,-122.195133
