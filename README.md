@@ -8,9 +8,9 @@
 
 There are multiple variations depending on the state or vaccination repository being monitored. Navigate to the sub-project's README for more information. 
 
-[California MyTurn](./california-myturn) - `california-myturn`
+California MyTurn System: [`california-myturn/`](./california-myturn)
 
-[Massachusetts Covid Vaccines](./massachusetts-macovidvaccines) - `massachusetts-macovidvaccines`
+Massachusetts Covid Vaccines [`massachussets-macovidvaccines/`](./massachusetts-macovidvaccines)
 
 The architecture and processes defined in this document are shared and common between the sub-projects.
 
