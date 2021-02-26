@@ -46,4 +46,4 @@ Alameda, Alpine, Amador, Berkeley, Butte, Calaveras, Colusa, Contra Costa, Del N
 
 #### `industry` values
 
-"Chemical and hazardous materials", "Communications and IT", "Critical manufacturing", "Defense", "Education and childcare", "Emergency services", "Energy", "Financial services", "Food and Agriculture", "Government operations / community based essential functions", "Healthcare Worker", "Industrial, commercial, residential, and sheltering facilities and services", "Retired", "Transportation and logistics", "Unemployed", "Water and wastewater", "Other", 
+"Chemical and hazardous materials", "Communications and IT", "Critical manufacturing", "Defense", "Education and childcare", "Emergency services", "Energy", "Financial services", "Food and Agriculture", "Government operations / community based essential functions", "Healthcare Worker", "Industrial, commercial, residential, and sheltering facilities and services", "Retired", "Transportation and logistics", "Unemployed", "Water and wastewater", "Other"
