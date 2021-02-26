@@ -63,7 +63,7 @@ https://airtable.com/
 
 Airtable is used as a simple database that we can interface with over a REST API to manage users. This can be adapted to use Google Sheets or another db storage mechanism. Airtable provides a simple way to use a spreadsheet-like interface to maintain records and should be free if you anticipate <1,200 user records.
 
-A sample Airtable "Base" schema can be found in [airtable_sample.csv](assets/airtable_sample.csv).
+A sample Airtable "Base" schema can be found in the subprojects under `assets/airtable_sample.csv`.
 
 [Airtable Pricing (Free Plan)](https://airtable.com/pricing)
 > Free Plan: 1,200 records per base
