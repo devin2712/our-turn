@@ -1,0 +1,5 @@
+﻿Name,Email,Phone Number,Last Call,Last Email,Min Minutes Between Calls,Min Minutes Between Emails,Locations
+Corona,coronavirus@example.com,+14151234567,2/25/2021 09:00,2/25/2021 09:00,30,30,"[ ""Fenway Park"",
+  ""Reggie Lewis State Track Athletic Ctr, Tremont Street, Boston, MA, USA"",
+  ""CVS (Boston)"",
+  ""CVS (Cambridge)]"
