@@ -8,6 +8,7 @@
     "deploy": "twilio-run deploy"
   },
   "dependencies": {
+    "axios": "^0.21.1",
     "twilio": "^3.56"
   },
   "devDependencies": {

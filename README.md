@@ -78,11 +78,43 @@ From the Twilio blog, I went with cronhooks.io from their recommended list of ea
 [cronhooks pricing (Basic Plan)](https://cronhooks.io/#pricing)
 - $3/month Basic Plan gives you 50 webhooks and the ability to schedule a recurring webhook. The Free plan does not let you schedule a recurring webhook.
 
+## Deployment
+
+### Airtable Schema
+
+1. Create a new Base in airtable for your project
+2. Upload the sample CSV file to get started on the correct schema
+3. Ensure the field types are correct 
+    - For DateTime values, choose Date with Time + 24hr + GMT
+    - For regular string values, choose single or multi line text
+    - For numbers (time thresholds), choose Number [Integer, do not allow negative]
+4. Use https://airtable.com/api to figure out what your base's API endpoint is
+
+### Twilio SendGrid
+
+- Create account and make sure you have your FROM Sender e-mail address and your SendGrid API token. They should be added to the ENV variables of your serverless function.
+
+### Twilio Serverless
+
+- Create a new Service (FKA Function) and copy the JS script over
+- Set up your environment variables (Twilio ACCOUNT SID and AUTH_TOKEN should automatically be present)
+- Add `axios` and `cheerio` dependencies in the function settings.
+
+- Create new TwiML bin with the sample XML file in the sub-project. This TwiML bin needs to be associated with your phone number in Twilio platform. Refer to https://support.twilio.com/hc/en-us/articles/223135027-Configure-a-Twilio-Phone-Number-to-Receive-and-Respond-to-Voice-Calls under the `Update phone number routing via Console` section. 
+
+- Deploy your function and ensure it's publicly accessible. A GET request to your endpoint will trigger the function!
+
+### cronhooks
+
+- Make an account and upgrade to basic plan.
+- Create new hook where the webhook URL is your twilio serverless function URL.
+- Choose a cron schedule that works for you. Use https://crontab.guru/examples.html to assist in generating a valid crontab syntax.
+
 ## Local Development
 
 To develop and run the function locally, update the sample `.env` file with your service api keys and credentials. 
 
-Ensure you have `npm` and `node` on your machine. Twilio Serverless production runs node 10.x so it would be better to use [nvm](https://github.com/nvm-sh/nvm) to ensure you're running 10.x locally to develop in line with how functions are executed in Twilio prod environments. 
+Ensure you have `npm` and `node` on your machine. Twilio Serverless production runs node 10.x or 12.x so it would be better to use [nvm](https://github.com/nvm-sh/nvm) to ensure you're running 10.x/12.x locally to develop in line with how functions are executed in Twilio prod environments. 
 
 ### Start Twilio Serverless Toolkit Development Server
 #### 1) Navigate into the relevant project 

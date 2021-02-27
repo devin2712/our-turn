@@ -1,0 +1,2 @@
+﻿name,email,phone,last_call,last_email,min_call_threshold,min_email_threshold,dose,locations
+Covid,corona@test.com,+12121234567,2/27/2021 00:00,2/27/2021 00:00,60,60,,"[""Medgar Evers College (Brooklyn)""]"
