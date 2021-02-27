@@ -1,4 +1,4 @@
-var axios = require("axios");
+const axios = require("axios");
 const cheerio = require("cheerio");
 
 // The names of the Airtable fields representing the last notified timestamp

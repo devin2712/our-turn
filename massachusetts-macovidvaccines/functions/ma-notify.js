@@ -1,4 +1,4 @@
-var axios = require("axios");
+const axios = require("axios");
 
 const sendEmail = async (apiKey, fromEmail, email, message) => {
   var data = JSON.stringify({
@@ -232,11 +232,11 @@ const processNotification = async (
   );
 
   const hasAvailabilities = userLocationAvailabilities.length > 0;
-  
+
   // If user timestamp is undefined, send a notification (can happen during initialization use case; very first notification)
   // If user timestamp is defined, compare with threshold preference.
   const timeThresholdMet = !userTimeStamp || (deltaInMinutes(userTimeStamp) > userThreshold);
-  
+
   // Trigger notification if time window threshold has been met and there are availabilities.
   if ((hasAvailabilities && timeThresholdMet) || (context.DEBUG_MODE === "true")) {
     switch (notificationType) {
