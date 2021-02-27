@@ -12,6 +12,8 @@ California MyTurn System: [`california-myturn/`](./california-myturn)
 
 Massachusetts Covid Vaccines: [`massachusetts-macovidvaccines/`](./massachusetts-macovidvaccines)
 
+NYC Vaccine List: [`nyc-vaccinelist/`](./nyc-vaccinelist)
+
 The architecture and processes defined in this document are shared and common between the sub-projects.
 
 ### Process
@@ -118,7 +120,7 @@ Ensure you have `npm` and `node` on your machine. Twilio Serverless production r
 
 ### Start Twilio Serverless Toolkit Development Server
 #### 1) Navigate into the relevant project 
-`cd california-myturn` or `cd massachusetts-macovidvaccines`
+`cd california-myturn` or `cd massachusetts-macovidvaccines` or `cd nyc-vaccinelist`
 
 #### 2) npm 
 ```
@@ -139,6 +141,9 @@ curl --location --request GET 'http://localhost:3000/ma-notify'
 ```
 ```
 curl --location --request GET 'http://localhost:3000/ca-myturn-notify'
+```
+```
+curl --location --request GET 'http://localhost:3000/nyc-notify'
 ```
 
 The cURL command should just return a basic "Success" payload
