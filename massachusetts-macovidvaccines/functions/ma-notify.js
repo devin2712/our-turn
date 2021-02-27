@@ -228,31 +228,41 @@ const processNotification = async (
   // Trigger notification if time window threshold has been met and there are availabilities.
   const hasAvailabilities = userLocationAvailabilities.length > 0;
   const timeThresholdMet =
-    (deltaInMinutes > userInfo[thresholdFieldName[notificationType]]) || context.DEBUG_MODE;
+    (deltaInMinutes > userInfo[thresholdFieldName[notificationType]]) || context.DEBUG_MODE === "true";
 
   if (hasAvailabilities && timeThresholdMet) {
     switch (notificationType) {
       case "EMAIL":
-        await sendEmail(
-          context.SENDGRID_API_KEY,
-          context.SENDGRID_SENDER,
-          userInfo.Email,
-          convertHTML(userLocationAvailabilities)
-        );
-        break;
+        // Only attempt to send email if one is defined for user
+        if (userInfo.Email && userInfo.Email.length > 0) {
+          await sendEmail(
+            context.SENDGRID_API_KEY,
+            context.SENDGRID_SENDER,
+            userInfo.Email,
+            convertHTML(userLocationAvailabilities)
+          );
+          // Returns new timestamp of when the new notification was sent
+          return Promise.resolve(new Date().toISOString());
+        } else {
+          return Promise.resolve(userInfo[timestampFieldName[notificationType]]);
+        }
       case "PHONE":
-        await callTwilio(
-          context.getTwilioClient(),
-          context.TWILIO_TWIML_BIN_ID,
-          context.TWILIO_PHONE_NUMBER,
-          userInfo.Name,
-          userInfo["Phone Number"],
-          userLocationAvailabilities
-        );
-        break;
+        // Only attempt to call phone if one is defined for user
+        if (userInfo["Phone Number"] && userInfo["Phone Number"].length > 0) {
+          await callTwilio(
+            context.getTwilioClient(),
+            context.TWILIO_TWIML_BIN_ID,
+            context.TWILIO_PHONE_NUMBER,
+            userInfo.Name,
+            userInfo["Phone Number"],
+            userLocationAvailabilities
+          );
+          // Returns new timestamp of when the new notification was sent
+          return Promise.resolve(new Date().toISOString());
+        } else {
+          return Promise.resolve(userInfo[timestampFieldName[notificationType]]);
+        }
     }
-    // Returns new timestamp of when the new notification was sent
-    return Promise.resolve(new Date().toISOString());
   } else {
     // Return old timestamp since we are not sending notitifcation or
     // updating user object.
