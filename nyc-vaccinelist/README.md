@@ -16,7 +16,7 @@ By default, the dose column should be left empty. This acts as a default filter 
 
 ### Location Preference
 
-There can be many locations in NYC and some with restrictions. It is best for a user to specify which locations they want to monitor availabilities can change frequently throughout the day. In the `locations` field in Airtable, specify an array of strings with the names of the locations from [NYC Vaccine List](https://nycvaccinelist.com/).
+There can be many locations in NYC and some with restrictions. It is best for a user to specify which locations they want to monitor as availabilities can change frequently throughout the day. In the `locations` field in Airtable, specify an array of strings with the names of the locations from [NYC Vaccine List](https://nycvaccinelist.com/).
 
 For example, to monitor just Medgar Evers College, the value for the user's `locations` field would be: 
 ```
