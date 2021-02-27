@@ -171,21 +171,29 @@ const processNotification = async (
   userLocationAvailabilities,
   notificationType
 ) => {
+  // When did we last notify user?
+  const userTimeStamp = user[timestampFieldName[notificationType]];
+
+  // How often does the user want to be notified?
+  const userThreshold = user[thresholdFieldName[notificationType]]
+
   // Calculate time since last notification
   //  (Current runtime invocation timestamp - last notification timestamp)
-  const deltaInMinutes = Math.round(
+  const deltaInMinutes = (userTimeStamp) => Math.round(
     (timestamp.getTime() -
-      new Date(user[timestampFieldName[notificationType]])) /
+      new Date(userTimeStamp)) /
     60000
   );
 
   const hasAvailabilities = userLocationAvailabilities.length > 0;
-  const timeThresholdMet =
-    deltaInMinutes > user[thresholdFieldName[notificationType]];
+
+  // If user timestamp is undefined, send a notification (can happen during initialization use case; very first notification)
+  // If user timestamp is defined, compare with threshold preference.
+  const timeThresholdMet = !userTimeStamp || (deltaInMinutes(userTimeStamp) > userThreshold);
 
   if (
     (hasAvailabilities && timeThresholdMet) ||
-    context.DEBUG_MODE === "true"
+    (context.DEBUG_MODE === "true")
   ) {
     switch (notificationType) {
       case "EMAIL":

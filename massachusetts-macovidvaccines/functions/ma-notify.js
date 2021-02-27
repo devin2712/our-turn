@@ -217,20 +217,28 @@ const processNotification = async (
     PHONE: "Min Minutes Between Calls",
   };
 
+  // When did we last notify user?
+  const userTimeStamp = userInfo[timestampFieldName[notificationType]];
+
+  // How often does the user want to be notified?
+  const userThreshold = userInfo[thresholdFieldName[notificationType]]
+
   // Calculate time since last notification
   //  (Current runtime invocation timestamp - last notification timestamp)
-  const deltaInMinutes = Math.round(
+  const deltaInMinutes = (userTimeStamp) => Math.round(
     (timestamp.getTime() -
-      new Date(userInfo[timestampFieldName[notificationType]])) /
+      new Date(userTimeStamp)) /
     60000
   );
 
-  // Trigger notification if time window threshold has been met and there are availabilities.
   const hasAvailabilities = userLocationAvailabilities.length > 0;
-  const timeThresholdMet =
-    (deltaInMinutes > userInfo[thresholdFieldName[notificationType]]) || context.DEBUG_MODE === "true";
-
-  if (hasAvailabilities && timeThresholdMet) {
+  
+  // If user timestamp is undefined, send a notification (can happen during initialization use case; very first notification)
+  // If user timestamp is defined, compare with threshold preference.
+  const timeThresholdMet = !userTimeStamp || (deltaInMinutes(userTimeStamp) > userThreshold);
+  
+  // Trigger notification if time window threshold has been met and there are availabilities.
+  if ((hasAvailabilities && timeThresholdMet) || (context.DEBUG_MODE === "true")) {
     switch (notificationType) {
       case "EMAIL":
         // Only attempt to send email if one is defined for user
