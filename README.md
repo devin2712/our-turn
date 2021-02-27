@@ -104,7 +104,7 @@ From the Twilio blog, I went with cronhooks.io from their recommended list of ea
    - `axios` is used to make the API calls but the code can be refactored to just use native `fetch`
    - `cheerio` is used only in the NYC variant as we need to parse the DOM of the nycvaccinelist index page, as there is no reliable JSON endpoint (the API endpoint changes with each Vercel/Next deploy)
 
-- Create new TwiML bin with the sample XML file in the sub-project. This TwiML bin needs to be associated with your phone number in Twilio platform. Refer to https://support.twilio.com/hc/en-us/articles/223135027-Configure-a-Twilio-Phone-Number-to-Receive-and-Respond-to-Voice-Calls under the `Update phone number routing via Console` section. This is used to programmatically control what the automated voice says when the user picks up the phone call - you can modify this to customize to your needs.
+- Create new TwiML bin with the sample XML file in the sub-project. This is used to programmatically control what the automated voice says when the user picks up the phone call - you can modify this to customize to your needs.
 
 - Save and deploy your function and ensure it's publicly accessible. A GET request to your endpoint will trigger the function!
 
