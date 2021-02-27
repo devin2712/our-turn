@@ -65,11 +65,11 @@ const callTwilio = async (
     encodeURIComponent(`${locations.length} total locations including` + locationSlice.join(", "));
 
   try {
-    // return await twilioClient.calls.create({
-    //   from: fromNumber,
-    //   to: number,
-    //   url: `https://handler.twilio.com/twiml/${twimlBinId}?name=${name}&number=${numOfSlots}&locations=${locationPhrase}`,
-    // });
+    return await twilioClient.calls.create({
+      from: fromNumber,
+      to: number,
+      url: `https://handler.twilio.com/twiml/${twimlBinId}?name=${name}&number=${numOfSlots}&locations=${locationPhrase}`,
+    });
   } catch (error) {
     console.log(error);
   }
