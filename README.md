@@ -98,13 +98,15 @@ From the Twilio blog, I went with cronhooks.io from their recommended list of ea
 
 ### Twilio Serverless
 
-- Create a new Service (FKA Function) and copy the JS script over
-- Set up your environment variables (Twilio ACCOUNT SID and AUTH_TOKEN should automatically be present)
+- Create a new Service (FKA Function) and copy the JS script over (ma-notify, ca-myturn-notify, etc.) and replace everything in the boilerplate file in Twilio.
+- Set up your environment variables (Twilio ACCOUNT SID and AUTH_TOKEN should automatically be present). Refer to the sample `.env` file in each subproject. You'll need to add Airtable API keys + Base API Endpoint, SendGrid API Key + Sender Email Address, and Twilio Phone Number (your dedicated purchased number) + Twilio TwiML Bin.
 - Add `axios` and `cheerio` dependencies in the function settings.
+   - `axios` is used to make the API calls but the code can be refactored to just use native `fetch`
+   - `cheerio` is used only in the NYC variant as we need to parse the DOM of the nycvaccinelist index page, as there is no reliable JSON endpoint (the API endpoint changes with each Vercel/Next deploy)
 
-- Create new TwiML bin with the sample XML file in the sub-project. This TwiML bin needs to be associated with your phone number in Twilio platform. Refer to https://support.twilio.com/hc/en-us/articles/223135027-Configure-a-Twilio-Phone-Number-to-Receive-and-Respond-to-Voice-Calls under the `Update phone number routing via Console` section. 
+- Create new TwiML bin with the sample XML file in the sub-project. This TwiML bin needs to be associated with your phone number in Twilio platform. Refer to https://support.twilio.com/hc/en-us/articles/223135027-Configure-a-Twilio-Phone-Number-to-Receive-and-Respond-to-Voice-Calls under the `Update phone number routing via Console` section. This is used to programmatically control what the automated voice says when the user picks up the phone call - you can modify this to customize to your needs.
 
-- Deploy your function and ensure it's publicly accessible. A GET request to your endpoint will trigger the function!
+- Save and deploy your function and ensure it's publicly accessible. A GET request to your endpoint will trigger the function!
 
 ### cronhooks
 
