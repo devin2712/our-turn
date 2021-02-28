@@ -1,24 +1,25 @@
 # Covid-19 Vaccine Appointment Notification System
 
-## Overview
-
-![Service Diagram](generic.png)
+![Get COVID-19 Vaccine Notifications using Twilio Serverless Functions](banner.png)
 
 ## Projects
 
-There are multiple variations depending on the state or vaccination repository being monitored. Navigate to the sub-project's README for more information. 
+There are multiple variations depending on the state or vaccination repository being monitored. Navigate to the sub-project's README for more information:
 
-California MyTurn System: [`california-myturn/`](./california-myturn)
+- California MyTurn System: [`california-myturn/`](./california-myturn)
 
-Massachusetts Covid Vaccines: [`massachusetts-macovidvaccines/`](./massachusetts-macovidvaccines)
+- Massachusetts Covid Vaccines: [`massachusetts-macovidvaccines/`](./massachusetts-macovidvaccines)
 
-NYC Vaccine List (NYC Only): [`nyc-vaccinelist/`](./nyc-vaccinelist)
+- NYC Vaccine List (NYC Only): [`nyc-vaccinelist/`](./nyc-vaccinelist)
 
-Get My Vaccine (CVS, Rite-Aid, Walgreens): [`getmyvaccine/`](./getmyvaccine)
+- Get My Vaccine (CVS, Rite-Aid, Walgreens): [`getmyvaccine/`](./getmyvaccine)
 
 The architecture and processes defined in this document are shared and common between the sub-projects.
 
 ### Process
+
+#### Architecture Overview
+![Service Diagram](generic.png)
 
 ### 1. Cron Scheduler
 Per a cron schedule, cronhooks makes a call to a webhook hosted by Twilio serverless functions.
