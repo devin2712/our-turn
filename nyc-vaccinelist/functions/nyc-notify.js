@@ -276,7 +276,7 @@ const filterResultsForUser = (results, user) => {
   // If user location param is empty/null, allow all locations
   // If locations has value (array of locations), then filter by locations.
   const locationPreference =
-    user.locations && JSON.parse(user.locations).length > 0 ? user.locations : null;
+    user.locations && JSON.parse(user.locations).length > 0 ? JSON.parse(user.locations) : null;
 
   return results
     .filter((loc) => {
