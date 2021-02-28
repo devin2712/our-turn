@@ -120,6 +120,20 @@ From the Twilio blog, I went with cronhooks.io from their recommended list of ea
 - Create new hook where the webhook URL is your twilio serverless function URL.
 - Choose a cron schedule that works for you. Use https://crontab.guru/examples.html to assist in generating a valid crontab syntax.
 
+## Performance
+
+The initial project was written to support operating on only a few users. With certain systems requiring many API calls to scrape status (MyTurn is minimum four calls in best case scenario), this can become unwieldly. There are several synchronous pieces of logic that are blocking and rely on the prior step. (Get users first, then find availabilities, and then update user)
+
+With AWS Lambda / Twilio Functions, the function handler will quit immediately and it will not wait for your logic to complete if you don't return a Promise that needs to be resolved. And with an execution time limitation of 10 seconds, we are limited to how much we can do.
+
+To support more than a few users, this project would need to be adapted to fan-out each user over a pub-sub implementation (Use AWS Lambda with SQS?) to run more performantly. Note that depending on the service, we sometimes have a central data set that we can operate on and other times, the data set is tailored to the user. For example:
+
+- For MA COVID Vaccines, the entire JSON data set is the latest availabilities for the state and is not catered to the user's profile.
+- Meanwhile for CA MyTurn, we need to make certain API requests based on the user's age/industry/etc. before we can get availabilities.
+
+Scaling out the MA use case is easier since we can just query for the data set once and reuse across all users, while for CA, we can't share a common data set. 
+
+
 ## Local Development
 
 To develop and run the function locally, update the sample `.env` file with your service api keys and credentials. 
