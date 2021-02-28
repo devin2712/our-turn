@@ -46,9 +46,10 @@ const callTwilio = async (
 ) => {
   // Compute total number of days in availabilities to dictate over the phone
   const numOfSlots = statuses.reduce(
-    (memo, s) => (memo = memo + (s.numOfDays || 0)),
+    (memo, s) => (memo = memo + ((s.availability && s.availability.length) || 0)),
     0
   );
+
   // Generate call phrase for speech-to-text to read out the list of
   // available locations. This is just adding an `and` after the penultimate
   // location if there are multiple locations.
@@ -340,7 +341,7 @@ const getMyTurnAvailabilities = async (user) => {
         (a) => a.available
       );
 
-      if (availableLocationSlots > 0) {
+      if (availableLocationSlots.length > 0) {
         return Promise.resolve({
           locationName: locationDefinitions[locationStatus.locationId].name,
           locationAddress:
