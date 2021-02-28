@@ -363,7 +363,7 @@ const getMyTurnAvailabilities = async (context, user) => {
       const locationStatus = await myTurnAvailabilityCheckForLocation(
         loc.vaccineData,
         loc.extId,
-        context.CA_MYTURN_DOSE_DAYS_BETWEEN
+        context.CA_MYTURN_DOSE_DAYS_BETWEEN || 21
       );
 
       // If nothing came back, that means there aren't enough appointments to book 1 and 2
@@ -447,7 +447,7 @@ const processNotification = async (
             context.SENDGRID_API_KEY,
             context.SENDGRID_SENDER,
             user.email.trim(),
-            convertHTML(userLocationAvailabilities, context.CA_MYTURN_DOSE_DAYS_BETWEEN)
+            convertHTML(userLocationAvailabilities, context.CA_MYTURN_DOSE_DAYS_BETWEEN || 21)
           );
           return Promise.resolve(new Date().toISOString());
         } else {
