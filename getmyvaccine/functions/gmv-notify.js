@@ -49,10 +49,10 @@ const callTwilio = async (
   let retailers = Object.entries(statuses).map((retailer) => {
     let citiesPhrase = Object.keys(retailer[1]);
     if (citiesPhrase.length > 1) {
-      citiesPhrase.splice(citiesPhrase.length - 1, 0, 'and');
+      citiesPhrase[citiesPhrase.length - 1] = "and " + citiesPhrase[citiesPhrase.length - 1];
     }
 
-    return `${retailer[0]} locations in ${citiesPhrase}`
+    return `${retailer[0]} locations in ${citiesPhrase}.`
   })
 
   if (retailers.length > 1) {
@@ -60,7 +60,7 @@ const callTwilio = async (
   }
 
   const locationPhrase =
-    encodeURIComponent(retailers.join(','));
+    encodeURIComponent(retailers.join(' '));
 
   try {
     return await twilioClient.calls.create({
@@ -178,7 +178,7 @@ const processNotification = async (
     60000
   );
 
-  const hasAvailabilities = userLocationAvailabilities.length > 0;
+  const hasAvailabilities = Object.entries(userLocationAvailabilities).length > 0;
 
   // If user timestamp is undefined, send a notification (can happen during initialization use case; very first notification)
   // If user timestamp is defined, compare with threshold preference.
@@ -341,6 +341,7 @@ const processUser = async (timestamp, context, user) => {
     consolidatedLocations,
     "EMAIL"
   );
+  
   // // Update the user's last emailed timestamp based on the result of processNotification
   user.last_email = emailTimestamp;
 
