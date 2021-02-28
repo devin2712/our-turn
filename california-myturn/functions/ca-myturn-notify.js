@@ -274,7 +274,6 @@ const myTurnAvailabilityCheckForLocation = async (
   locationId,
   numOfDaysBetweenDoses
 ) => {
-  const today = new Date();
   const checkData = (date, doseNumber) => ({
     vaccineData: locationVaccineData,
     startDate: date.toISOString().slice(0, 10),
@@ -298,7 +297,7 @@ const myTurnAvailabilityCheckForLocation = async (
       headers: {
         "Content-Type": "application/json",
       },
-      data: checkData(today, 1),
+      data: checkData(new Date(), 1),
     });
 
     // Break out early if no availability 
@@ -309,7 +308,8 @@ const myTurnAvailabilityCheckForLocation = async (
     // Let's assume the Pfizer use case with 21 days, although this can be configured via the ENV variable (CA_MYTURN_DOSE_DAYS_BETWEEN).
     // The only way to programmatically get the correct number of days in betwen (21 vs 28) is to use the Reserve API.
     // We are going to avoid calling the reserve API to avoid abusing the registration system.
-    const secondDoseStartDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + numOfDaysBetweenDoses);
+    let secondDoseStartDate = new Date();
+    secondDoseStartDate.setDate(secondDoseStartDate.getDate() + Number(numOfDaysBetweenDoses));
     const dose2Response = await axios({
       method: "post",
       url: `https://api.myturn.ca.gov/public/locations/${locationId}/availability`,
