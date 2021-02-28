@@ -6,7 +6,7 @@
 
 ## Eligibility
 
-We are checking eligibility status as part of the monitoring process. The User record has fields that specify the profile of the user (age, industry, etc.) that will help qualify whether or not the user is currently eligible. If the user is not eligible, it is the same as having no availabilities and they will not be notified. Ensure the User record is using valid field values, as defined in the "Eligibility Acceptable Values" section.
+We are checking eligibility status as part of the monitoring process. The User record has fields that specify the profile of the user (age, industry, etc.) that will help qualify whether or not the user is currently eligible. If the user is not eligible, it is the same as having no availabilities and they will not be notified. Ensure the User record is using valid field values, as defined in the ["Eligibility Acceptable Values" section](#eligibility-acceptable-values).
 
 As soon as eligibility criteria change at the CA state-level, we will automatically get updates and if there are availabilities for the user, we will begin to send notifications.
 
