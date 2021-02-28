@@ -1,0 +1,2 @@
+﻿name,email,phone,last_call,last_email,min_call_threshold,min_email_threshold,data_freshness,store_preference,zipcode,distance
+Corona,covid@example.com,+14151234567,2/26/2021 09:00,2/26/2021 09:00,1440,1440,5,["cvs"],10001,15

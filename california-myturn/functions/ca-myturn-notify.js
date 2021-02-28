@@ -52,7 +52,7 @@ const callTwilio = async (
   // Generate call phrase for speech-to-text to read out the list of
   // available locations. This is just adding an `and` after the penultimate
   // location if there are multiple locations.
-  const locations = statuses.map((loc) => loc.locationName);
+  let locations = statuses.map((loc) => loc.locationName);
   if (locations.length > 1) {
     locations.splice(locations.length - 1, 0, "and");
   }
@@ -401,7 +401,7 @@ const processNotification = async (
           await sendEmail(
             context.SENDGRID_API_KEY,
             context.SENDGRID_SENDER,
-            user.email,
+            user.email.trim(),
             convertHTML(userLocationAvailabilities)
           );
           return Promise.resolve(new Date().toISOString());
@@ -416,7 +416,7 @@ const processNotification = async (
             context.TWILIO_TWIML_BIN_ID,
             context.TWILIO_PHONE_NUMBER,
             user.name,
-            user.phone,
+            user.phone.trim(),
             userLocationAvailabilities
           );
           return Promise.resolve(new Date().toISOString());

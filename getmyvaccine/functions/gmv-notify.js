@@ -18,7 +18,7 @@ const sendEmail = async (apiKey, fromEmail, email, message) => {
   var data = JSON.stringify({
     personalizations: [{ to: [{ email: email }] }],
     from: { email: fromEmail },
-    subject: `NYC COVID-19 Vaccine Availability Status Report: ${new Date().toGMTString()}`,
+    subject: `Retail Pharmacy COVID-19 Vaccine Availability Status Report: ${new Date().toGMTString()}`,
     content: [{ type: "text/html", value: message }],
   });
 
@@ -45,30 +45,28 @@ const callTwilio = async (
   number,
   statuses
 ) => {
-  // Compute total number of days in availabilities to dictate over the phone
-  const numOfSlots = statuses.reduce(
-    (memo, s) => (memo = memo + (s.totalAvailability || 0)),
-    0
-  );
-  // Generate call phrase for speech-to-text to read out the list of
-  // available locations. This is just adding an `and` after the penultimate
-  // location if there are multiple locations.
-  const locations = statuses.map((loc) => loc.name);
 
-  // NYC has many locations so just truncating to the first few over the phone.
-  let locationSlice = locations.slice(0, 5);
-  if (locationSlice.length > 1) {
-    locationSlice.splice(locations.length - 1, 0, "and");
+  let retailers = Object.entries(statuses).map((retailer) => {
+    let citiesPhrase = Object.keys(retailer[1]);
+    if (citiesPhrase.length > 1) {
+      citiesPhrase.splice(citiesPhrase.length - 1, 0, 'and');
+    }
+
+    return `${retailer[0]} locations in ${citiesPhrase}`
+  })
+
+  if (retailers.length > 1) {
+    retailers.splice(retailers.length - 1, 0, 'and');
   }
 
   const locationPhrase =
-    encodeURIComponent(`${locations.length} total locations including` + locationSlice.join(", "));
+    encodeURIComponent(retailers.join(','));
 
   try {
     return await twilioClient.calls.create({
       from: fromNumber,
       to: number,
-      url: `https://handler.twilio.com/twiml/${twimlBinId}?name=${name}&number=${numOfSlots}&locations=${locationPhrase}`,
+      url: `https://handler.twilio.com/twiml/${twimlBinId}?name=${name}&locations=${locationPhrase}`,
     });
   } catch (error) {
     console.log(error);
@@ -76,27 +74,21 @@ const callTwilio = async (
 };
 
 // Converts an array of availabilities into a basic HTML email for display
-const convertHTML = (statuses) => {
+const convertHTML = (user, statuses) => {
   let locationBlocks = "";
 
-  statuses.forEach((location) => {
-    let availableBlocks = "<h3>Available Dates</h3>";
+  Object.entries(statuses).forEach((retailer) => {
 
-    Object.entries(location.availability).forEach((a) => {
-      availableBlocks += `
-          <li>${a[0]}: ${a[1]} available</li>
-        `;
-    });
+    let cityBlocks = "";
+    Object.entries(retailer[1]).forEach((city) => {
+      cityBlocks += `${city[0]}: ${city[1].join(', ')}<br />`
+    })
 
     locationBlocks += `
-          <hr>
-          <h2>${location.name} - ${location.totalAvailability} slots available</h2>
-          <h4>Address (if available): ${location.address}</h4>
-          <p>Notes: ${location.notes}<p/>
-          <p>Signup link (if available): ${location.url}</p>
-
-          ${availableBlocks}
-        `;
+      <hr>
+      <h2>${retailer[0]}</h2>
+      <p>${cityBlocks}</p>
+    `;
   });
 
   return `
@@ -104,10 +96,11 @@ const convertHTML = (statuses) => {
       <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB">
       <head>
           <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-          <title>NYC COVID-19 Vaccine Availabilities</title>
+          <title>Retail Pharmacy COVID-19 Vaccine Availabilities</title>
           <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
       </head>
-      <h1>NYC COVID-19 Vaccine Availabilities</h1>
+      <h1>Retail Pharmacy COVID-19 Vaccine Availabilities</h1>
+      <h2>Check GetMyVaccine for more info: <a href="https://www.getmyvaccine.org/zips/${user.zipcode}">https://www.getmyvaccine.org/zips/${user.zipcode}</a></h2>
       ${locationBlocks}
     </html>
   `;
@@ -203,7 +196,7 @@ const processNotification = async (
             context.SENDGRID_API_KEY,
             context.SENDGRID_SENDER,
             user.email.trim(),
-            convertHTML(userLocationAvailabilities)
+            convertHTML(user, userLocationAvailabilities)
           );
           return Promise.resolve(new Date().toISOString());
         } else {
@@ -232,22 +225,6 @@ const processNotification = async (
   }
 };
 
-const getVaccineStatus = async () => {
-  try {
-    return await axios({
-      method: "get",
-      url: "https://nycvaccinelist.com/",
-    }).then((response) => {
-      // API endpoint changes with each site deploy, so need to parse HTML response of index page
-      const $ = cheerio.load(response.data);
-      const nextData = $('html').find("#__NEXT_DATA__").contents().first().text();
-      return JSON.parse(nextData).props.pageProps.locations.locationsWithSlots;
-    });
-  } catch (error) {
-    console.log(error);
-  }
-};
-
 // Process all users and send notifications if criteria is met.
 // Loops through all users we have and processes email and phone alerts.
 // Users will be notified if:
@@ -255,9 +232,9 @@ const getVaccineStatus = async () => {
 //    2) Enough time has passed since our last notification per user preferences.
 //       This is to avoid calling a phone every 5 mins if there is a 60 minute window
 //       during which there are open appointment availabilities.
-const processUsers = async (context, users, timestamp, results) => {
+const processUsers = async (context, users, timestamp,) => {
   const userPromises = users.map(async (user) => {
-    return await processUser(timestamp, context, results, user.fields);
+    return await processUser(timestamp, context, user.fields);
   });
 
   // Wait for all users to be processed and then return the users array, which
@@ -269,45 +246,89 @@ const processUsers = async (context, users, timestamp, results) => {
 
 // Returns array of locations if available for user
 // Returns empty array if none found
-const filterResultsForUser = (results, user) => {
-  // Assume matching with empty string if user profile has no value
-  // ("" == first dose, "Second Dose" == second dose only)
-  const dosePreference = user.dose && user.dose.length > 1 ? user.dose : "";
-  // If user location param is empty/null, allow all locations
-  // If locations has value (array of locations), then filter by locations.
-  const locationPreference =
-    user.locations && user.locations.length > 1 ? user.locations : null;
+const filterResultsForUser = (results, user, timestamp) => {
 
-  return results
+  // If no user distance prefrence is defined, don't filter anything.
+  // Otherwise, ensure the location is within range.
+  const isWithinRange = (locationDistance, userDistancePreference) => {
+    return !userDistancePreference || (locationDistance < userDistancePreference);
+  }
+
+  // If no user store preference is defined, don't fitler anything.
+  // Otherwise, ensure this location is one of the user's desired retail pharmacies.
+  const isPreferredStore = (store, userStorePreference) => {
+    return (!userStorePreference || userStorePreference.length > 0) || userStorePreference.includes(store);
+  }
+
+  // If no user data freshness preference is defined, don't filter anything.
+  // Otherwise, make sure the data collection time is within the user's preference.
+  const isFresh = (dataCollectionTime, userDataFreshnessPreference) => {
+    return (!userDataFreshnessPreference) || (Math.abs(Math.round((timestamp - dataCollectionTime) / 60000)) <= userDataFreshnessPreference);
+  }
+
+  // Each retailer has a different key in their schema
+  const hasAppointments = (loc) => {
+    // CVS schema should have a key `available_slots` with a number, but it seems like the actual interpretation
+    // should be that the presence of a CVS record means that there is an availability, so bypass a check.
+    return loc.store === "cvs" || loc.appointments_available || (loc.slots_1 || loc.slots_2);
+  }
+
+  const availabilityData = (results && results.zips && results.zips.length > 0) ? results.zips : [];
+
+  return availabilityData
     .filter((loc) => {
       return (
-        loc.dose === dosePreference &&
-        (locationPreference ? locationPreference.includes(loc.name) : true)
+        hasAppointments(loc) &&
+        isFresh(new Date(loc.collection_date), user.data_freshness) &&
+        isPreferredStore(loc.store, user.store_preference) &&
+        isWithinRange(loc.distance, user.distance)
       );
     })
     .map((loc) => {
       return {
-        name: loc.name,
-        address: loc.address.join(" "),
-        availability: loc.slots.reduce((memo, val) => {
-          memo[val.date]
-            ? (memo[val.date] = memo[val.date] + val.available)
-            : (memo[val.date] = val.available);
-          return memo;
-        }, {}),
-        url: loc.url,
-        totalAvailability: loc.total_available,
-        notes: loc.publicNotes,
+        store: loc.store.replace("_", " "),
+        city: loc.city,
+        state: loc.state,
+        zipcode: loc.zip || loc.zips,
       };
     });
 };
 
-const processUser = async (timestamp, context, results, user) => {
-  // Filter based on locations data
-  // Take into dose value — if empty string or null, assume matching with empty string
-  // If "Second Dose"
+const getGMVData = async (zipcode) => {
+  try {
+    return await axios({
+      method: "get",
+      url: `https://www.getmyvaccine.org/zips/${zipcode}`,
+    }).then((response) => {
+      // API endpoint changes with each site deploy, so need to parse HTML response of index page
+      const $ = cheerio.load(response.data);
+      const nextData = $('html').find("#__NEXT_DATA__").contents().first().text();
+      return JSON.parse(nextData).props.pageProps;
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
 
-  const availabilities = filterResultsForUser(results, user);
+const processUser = async (timestamp, context, user) => {
+
+  // Get GMV Vaccine data based on user preferences
+  const results = await getGMVData(user.zipcode);
+
+  // Filter based on locations data with user prefere
+  const availabilities = filterResultsForUser(results, user, timestamp);
+
+  // Since these are generic retail pharmacy locations that can share a zipcode, 
+  //  we need to collapse if the locations to make it easy to display on email and speak over phone.
+  // 
+  // Output format is:    
+  // consolidatedLocations: { walgreens: { 'CityName': [12345, 67890], 'Cityname2' : [12345] }, cvs: { 'City3Name': [78901] } }
+  const consolidatedLocations = availabilities.reduce(
+    (memo, l) => {
+      memo[l.store] ? (memo[l.store][l.city] ? memo[l.store][l.city].push(l.zipcode) : memo[l.store][l.city] = [l.zipcode]) : memo[l.store] = { [l.city]: [l.zipcode] };
+      return memo;
+    }, {}
+  )
 
   // Process Email Notification
   // emailTimestamp will either
@@ -317,24 +338,24 @@ const processUser = async (timestamp, context, results, user) => {
     timestamp,
     context,
     user,
-    availabilities,
+    consolidatedLocations,
     "EMAIL"
   );
-  // Update the user's last emailed timestamp based on the result of processNotification
+  // // Update the user's last emailed timestamp based on the result of processNotification
   user.last_email = emailTimestamp;
 
-  // Process Phone Notification
-  // phoneTimestamp will either
-  //  1) return the old last-called timestamp if no notification was triggered
-  //  2) return a new updated timestamp if a notification was triggered + delivered
+  // // Process Phone Notification
+  // // phoneTimestamp will either
+  // //  1) return the old last-called timestamp if no notification was triggered
+  // //  2) return a new updated timestamp if a notification was triggered + delivered
   const phoneTimestamp = await processNotification(
     timestamp,
     context,
     user,
-    availabilities,
+    consolidatedLocations,
     "PHONE"
   );
-  // Update the user's last called timestamp based on the result of processNotification
+  // // Update the user's last called timestamp based on the result of processNotification
   user.last_call = phoneTimestamp;
 
   return Promise.resolve(user);
@@ -343,9 +364,6 @@ const processUser = async (timestamp, context, results, user) => {
 exports.handler = async function (context, event, callback) {
   // Get all users from Airtable that need to be processed
   let users = await getUsers(context);
-
-  // Get NYC Vaccine Info
-  const vaxData = await getVaccineStatus();
 
   // Runtime timestamp (going to just reuse when setting the "last called" and "last email" times)
   const runtimeTimestamp = new Date();
@@ -360,7 +378,6 @@ exports.handler = async function (context, event, callback) {
     context,
     users,
     runtimeTimestamp,
-    vaxData
   );
 
   // // Update Airtable with all user definitions.
