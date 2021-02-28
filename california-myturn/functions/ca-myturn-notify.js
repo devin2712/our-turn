@@ -44,9 +44,9 @@ const callTwilio = async (
   number,
   statuses
 ) => {
-  // Compute total number of days in availabilities to dictate over the phone
+  // Compute total number of days in availabilities for first dose to dictate over the phone
   const numOfSlots = statuses.reduce(
-    (memo, s) => (memo = memo + ((s.availability && s.availability.length) || 0)),
+    (memo, s) => (memo = memo + ((s.availability.dose1 && s.availability.dose1.length) || 0)),
     0
   );
 
@@ -58,12 +58,14 @@ const callTwilio = async (
     locations.splice(locations.length - 1, 0, "and");
   }
   const locationPhrase = encodeURIComponent(locations.join(", "));
+  const datesPhrase = encodeURIComponent(numOfSlots === 1 ? 'is 1 date' : `are ${numOfSlots} dates`);
+  const locationCountPhrase = encodeURIComponent(statuses.length === 1 ? "1 location": `${statuses.length} locations`);
 
   try {
     return await twilioClient.calls.create({
       from: fromNumber,
       to: number,
-      url: `https://handler.twilio.com/twiml/${twimlBinId}?name=${name}&number=${numOfSlots}&locations=${locationPhrase}`,
+      url: `https://handler.twilio.com/twiml/${twimlBinId}?name=${name}&number=${datesPhrase}&locationCount=${locationCountPhrase}&locations=${locationPhrase}`,
     });
   } catch (error) {
     console.log(error);
@@ -71,25 +73,26 @@ const callTwilio = async (
 };
 
 // Converts an array of availabilities into a basic HTML email for display
-const convertHTML = (statuses) => {
+const convertHTML = (statuses, doseDaysInBetween) => {
   let locationBlocks = "";
 
   statuses.forEach((location) => {
-    let availableBlocks = "<h3>Available Dates</h3>";
+    let dose1Block = "<h3>Dose 1 Available Dates</h3>";
+    location.availability.dose1.forEach((a) => {
+      dose1Block += `<li>${a.date}</li>`;
+    })
 
-    location.availability.forEach((a) => {
-      if (a.available) {
-        availableBlocks += `
-          <li>${a.date}</li>
-        `;
-      }
-    });
+    let dose2Block = `<h3>Dose 2 Available Dates (${doseDaysInBetween} days after first dose)</h3>`;
+    location.availability.dose2.forEach((a) => {
+      dose2Block += `<li>${a.date}</li>`;
+    })
 
     locationBlocks += `
           <hr>
           <h2>${location.locationName}</h2>
           <h4>Address (if available): ${location.locationAddress}</h4>
-          ${availableBlocks}
+          ${dose1Block}
+          ${dose2Block}
         `;
   });
 
@@ -268,35 +271,60 @@ const myTurnLocationSearch = async (user, vaccineData) => {
 // Only return a populated Object {} if there are availabilities; otherwise, return {}
 const myTurnAvailabilityCheckForLocation = async (
   locationVaccineData,
-  locationId
+  locationId,
+  numOfDaysBetweenDoses
 ) => {
-  const date = new Date();
-  const checkData = {
+  const today = new Date();
+  const checkData = (date, doseNumber) => ({
     vaccineData: locationVaccineData,
     startDate: date.toISOString().slice(0, 10),
-    endDate: new Date(date.setMonth(date.getMonth() + 2))
+    endDate: new Date(date.getFullYear(), date.getMonth() + 2, date.getDate())
       .toISOString()
       .slice(0, 10),
-    doseNumber: 1,
+    doseNumber: doseNumber,
     url: "https://myturn.ca.gov/appointment-select",
-  };
+  });
 
   try {
-    const response = await axios({
+    // CA MyTurn will attempt to book both dose appointments during the registration process.
+    // We should only send a notification that it's possible to book in the system if there are availables:
+    //    1) From today onwards for dose 1
+    //    2) From (today+21 days) onwards for dose 2
+    // 
+    // If there are only availabilities for the first dose but you can't book the second dose, then don't send notification.
+    const dose1Response = await axios({
       method: "post",
       url: `https://api.myturn.ca.gov/public/locations/${locationId}/availability`,
       headers: {
         "Content-Type": "application/json",
       },
-      data: checkData,
+      data: checkData(today, 1),
     });
 
-    if (response.data.availability && response.data.availability.length > 0) {
-      // There are open availabilities on some days!
+    // Break out early if no availability 
+    if (!dose1Response.data.availability || dose1Response.data.availability.length === 0) {
+      return {};
+    }
+
+    // Let's assume the Pfizer use case with 21 days, although this can be configured via the ENV variable (CA_MYTURN_DOSE_DAYS_BETWEEN).
+    // The only way to programmatically get the correct number of days in betwen (21 vs 28) is to use the Reserve API.
+    // We are going to avoid calling the reserve API to avoid abusing the registration system.
+    const secondDoseStartDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + numOfDaysBetweenDoses);
+    const dose2Response = await axios({
+      method: "post",
+      url: `https://api.myturn.ca.gov/public/locations/${locationId}/availability`,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: checkData(secondDoseStartDate, 2),
+    });
+
+    if (dose2Response.data.availability && dose2Response.data.availability.length > 0) {
       return {
-        locationId: response.data.locationExtId,
-        availability: response.data.availability,
-      };
+        locationId: dose1Response.data.locationExtId,
+        dose1Dates: dose1Response.data.availability,
+        dose2Dates: dose2Response.data.availability
+      }
     } else {
       return {};
     }
@@ -306,7 +334,7 @@ const myTurnAvailabilityCheckForLocation = async (
   }
 };
 
-const getMyTurnAvailabilities = async (user) => {
+const getMyTurnAvailabilities = async (context, user) => {
   const vaccineData = await myTurnEligibilityCheck(user);
 
   // If vaccineData is an empty string, it means user is not eligible yet.
@@ -334,21 +362,37 @@ const getMyTurnAvailabilities = async (user) => {
     availableLocations.map(async (loc) => {
       const locationStatus = await myTurnAvailabilityCheckForLocation(
         loc.vaccineData,
-        loc.extId
+        loc.extId,
+        context.CA_MYTURN_DOSE_DAYS_BETWEEN
       );
 
-      const availableLocationSlots = locationStatus.availability.filter(
-        (a) => a.available
-      );
+      // If nothing came back, that means there aren't enough appointments to book 1 and 2
+      if (Object.entries(locationStatus).length === 0) {
+        return Promise.resolve(null);
+      }
 
-      if (availableLocationSlots.length > 0) {
+      // Per this quick implementation, if there is a response from myTurnAvailabilityCheckForLocation,
+      // we can assume that there are availability entries for dose1 and dose2. But we need to validate 
+      // that at least one date myTurn provides has availabile==true.
+      // We can assume that all dates in the dose2 availability object are 21 days ahead.
+      const availableLocationSlots = {
+        locationId: locationStatus.locationId,
+        dose1AvailableDates: locationStatus.dose1Dates.filter((a) => a.available),
+        dose2AvailableDates: locationStatus.dose2Dates.filter((a) => a.available)
+      }
+
+      // If there are available dates in both dose 1 and dose 2, then a user can book and we should notify them.
+      if (availableLocationSlots.dose1AvailableDates.length > 0 && availableLocationSlots.dose2AvailableDates.length > 0) {
         return Promise.resolve({
           locationName: locationDefinitions[locationStatus.locationId].name,
           locationAddress:
             locationDefinitions[locationStatus.locationId].address,
-          availability: locationStatus.availability,
-          numOfDays: availableLocationSlots,
-        });
+          availability: {
+            dose1: availableLocationSlots.dose1AvailableDates,
+            dose2: availableLocationSlots.dose2AvailableDates
+          },
+          numOfDays: availableLocationSlots.dose1AvailableDates.length + availableLocationSlots.dose2AvailableDates.length,
+        })
       } else {
         return Promise.resolve(null);
       }
@@ -403,7 +447,7 @@ const processNotification = async (
             context.SENDGRID_API_KEY,
             context.SENDGRID_SENDER,
             user.email.trim(),
-            convertHTML(userLocationAvailabilities)
+            convertHTML(userLocationAvailabilities, context.CA_MYTURN_DOSE_DAYS_BETWEEN)
           );
           return Promise.resolve(new Date().toISOString());
         } else {
@@ -452,7 +496,7 @@ const processUsers = async (context, users, timestamp) => {
 };
 
 const processUser = async (timestamp, context, user) => {
-  const results = await getMyTurnAvailabilities(user);
+  const results = await getMyTurnAvailabilities(context, user);
 
   // Process Email Notification
   // emailTimestamp will either
