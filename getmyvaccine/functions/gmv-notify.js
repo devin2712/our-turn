@@ -257,7 +257,7 @@ const filterResultsForUser = (results, user, timestamp) => {
   // If no user store preference is defined, don't fitler anything.
   // Otherwise, ensure this location is one of the user's desired retail pharmacies.
   const isPreferredStore = (store, userStorePreference) => {
-    return (!userStorePreference || userStorePreference.length > 0) || userStorePreference.includes(store);
+    return (!userStorePreference || userStorePreference.length === 0) || userStorePreference.includes(store);
   }
 
   // If no user data freshness preference is defined, don't filter anything.
