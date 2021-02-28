@@ -73,7 +73,7 @@ const callTwilio = async (
 };
 
 // Converts an array of availabilities into a basic HTML email for display
-const convertHTML = (statuses, doseDaysInBetween) => {
+const convertHTML = (user, statuses, doseDaysInBetween) => {
   let locationBlocks = "";
 
   statuses.forEach((location) => {
@@ -101,12 +101,16 @@ const convertHTML = (statuses, doseDaysInBetween) => {
       <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB">
       <head>
           <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-          <title>Boston COVID-19 Vaccine Availabilities</title>
+          <title>CA COVID-19 Vaccine Availabilities</title>
           <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
       </head>
-      <h1>CA COVID-19 Vaccine Availabilities</h1>
-      <h3>Go to <a href="https://myturn.ca.gov/">MyTurn Website</a> and enter your information to book an appointment.</h3>
+      <h1>CA COVID-19 Vaccine Availabilities for ${user.name}</h1>
+      <p>We just detected availabilities for <strong>${user.age_range}</strong> years old, living/working in <strong>${user.county} County</strong> within the <strong>${user.industry}</strong> industry. Go to <strong><a href="https://myturn.ca.gov/">MyTurn Website</a></strong> and enter your information to book an appointment using the same values.</p>
+      <p>Note: We have checked that there are availabilities for both doses so you should be able to book both slots at the same time.</p>
       ${locationBlocks}
+
+      <hr>
+      <small>Based on your user preferences, we will not e-mail you again for another ${user.min_email_threshold} minutes, even if more availabilities open up.</small>
     </html>
   `;
 };
@@ -447,7 +451,7 @@ const processNotification = async (
             context.SENDGRID_API_KEY,
             context.SENDGRID_SENDER,
             user.email.trim(),
-            convertHTML(userLocationAvailabilities, context.CA_MYTURN_DOSE_DAYS_BETWEEN || 21)
+            convertHTML(user, userLocationAvailabilities, context.CA_MYTURN_DOSE_DAYS_BETWEEN || 21)
           );
           return Promise.resolve(new Date().toISOString());
         } else {
