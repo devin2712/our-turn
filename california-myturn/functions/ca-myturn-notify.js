@@ -53,11 +53,21 @@ const callTwilio = async (
   // Generate call phrase for speech-to-text to read out the list of
   // available locations. This is just adding an `and` after the penultimate
   // location if there are multiple locations.
-  let locations = statuses.map((loc) => loc.locationName);
-  if (locations.length > 1) {
-    locations.splice(locations.length - 1, 0, "and");
+  const locations = statuses.map((loc) => loc.locationName);
+
+  let locationSlice;
+  if (locations.length > 3) {
+    locationSlice = locations.slice(0,3);
+    locationSlice.splice(locationSlice.length, 0, `and ${locations.length - 3} other locations.`);
+  } else if (locations.length > 1) {
+    locationSlice = locations;
+    locationSlice.splice(locationSlice.length - 1, 0, "and");
+  } else {
+    locationSlice = locations;
   }
-  const locationPhrase = encodeURIComponent(locations.join(", "));
+
+  // Read out only the first few
+  const locationPhrase = encodeURIComponent(locationSlice.join(", "));
   const datesPhrase = encodeURIComponent(numOfSlots === 1 ? 'is 1 date' : `are ${numOfSlots} dates`);
   const locationCountPhrase = encodeURIComponent(statuses.length === 1 ? "1 location": `${statuses.length} locations`);
 

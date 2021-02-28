@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Amy-Neural">Hey {{name}}, There {{number}} with COVID-19 vaccines available for the first dose across {{locationCount}}. <break strength="strong" /> Please check your e-mail for more details. Available locations are: {{locations}}</Say>
+  <Say voice="Polly.Amy-Neural"><break strength="medium" />Hey {{name}}, There {{number}} with COVID-19 vaccines available, for the first dose, across {{locationCount}}. <break strength="strong" /> Please check your e-mail for more details. Available locations are: {{locations}}.</Say>
 </Response>
