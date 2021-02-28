@@ -14,13 +14,13 @@ The API calls are querying the Get My Vaccine website: [Get My Vaccine](https://
 
 ### Data Freshness
 
-GetMyVaccine is monitoring retail pharmacy websites and stores a timestamp for when they last checked the retail pharmacy's status. Use the `data_freshness` field in the User object to specify a preference to only filter by location availabilities if the data was recently updated wtihin X minutes. If `data_freshness` is set to `5`, we will filter GetMyVaccine's results to only look at results that show CVS/Rite-Aid/Walgreens had availabilities as of 5 minutes prior to the function invocation. 
+GetMyVaccine is monitoring retail pharmacy websites and stores a timestamp for when they last checked the retail pharmacy's status. Use the `data_freshness` field in the User object to specify a preference to only filter by location availabilities if the data was recently updated within X minutes. If `data_freshness` is set to `5`, we will filter GetMyVaccine's results to only look at results that show CVS/Rite-Aid/Walgreens had availabilities as of 5 minutes prior to the function invocation. 
 
 Empty value for `data_freshness` will not filter any results. Recommendation is to set this field to a value like `5` to avoid triggering on stale collection data.
 
 ### Store Preference
 
-Since GetMyVaccine is monitoring CVS, Rite-Aid, and Walgreens, you can opt to only montior a subset of these retailers. Empty value or empty array will monitor all 3 or you can specify with an array of strings (e.g. `["cvs"]` for CVS only or `["rite_aid", "walgreens"]` for Rite-Aid and Walgreens only).
+Since GetMyVaccine is monitoring CVS, Rite-Aid, and Walgreens, you can opt to only monitor a subset of these retailers. Empty value or empty array will monitor all 3 or you can specify with an array of strings (e.g. `["cvs"]` for CVS only or `["rite_aid", "walgreens"]` for Rite-Aid and Walgreens only).
 
 ### Time Threshold
 

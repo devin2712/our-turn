@@ -255,13 +255,13 @@ const processUsers = async (context, users, timestamp,) => {
 // Returns empty array if none found
 const filterResultsForUser = (results, user, timestamp) => {
 
-  // If no user distance prefrence is defined, don't filter anything.
+  // If no user distance preference is defined, don't filter anything.
   // Otherwise, ensure the location is within range.
   const isWithinRange = (locationDistance, userDistancePreference) => {
     return !userDistancePreference || (locationDistance < userDistancePreference);
   }
 
-  // If no user store preference is defined, don't fitler anything.
+  // If no user store preference is defined, don't filter anything.
   // Otherwise, ensure this location is one of the user's desired retail pharmacies.
   const isPreferredStore = (store, userStorePreference) => {
     return (!userStorePreference || JSON.parse(userStorePreference).length === 0) || JSON.parse(userStorePreference).includes(store);
@@ -322,7 +322,7 @@ const processUser = async (timestamp, context, user) => {
   // Get GMV Vaccine data based on user preferences
   const results = await getGMVData(user.zipcode);
 
-  // Filter based on locations data with user prefere
+  // Filter based on locations data with user preference
   const availabilities = filterResultsForUser(results, user, timestamp);
 
   // Since these are generic retail pharmacy locations that can share a zipcode, 

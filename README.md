@@ -122,7 +122,7 @@ From the Twilio blog, I went with cronhooks.io from their recommended list of ea
 
 ## Performance
 
-The initial project was written to support operating on only a few users. With certain systems requiring many API calls to scrape status (MyTurn is minimum four calls in best case scenario), this can become unwieldly. There are several synchronous pieces of logic that are blocking and rely on the prior step. (Get users first, then find availabilities, and then update user)
+The initial project was written to support operating on only a few users. With certain systems requiring many API calls to scrape status (MyTurn is minimum four calls in best case scenario), this can become unwieldy. There are several synchronous pieces of logic that are blocking and rely on the prior step. (Get users first, then find availabilities, and then update user)
 
 With AWS Lambda / Twilio Functions, the function handler will quit immediately and it will not wait for your logic to complete if you don't return a Promise that needs to be resolved. And with an execution time limitation of 10 seconds, we are limited to how much we can do.
 

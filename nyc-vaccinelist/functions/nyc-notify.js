@@ -241,7 +241,7 @@ const processNotification = async (
         }
     }
   } else {
-    // Return old timestamp since we are not sending notitifcation or
+    // Return old timestamp since we are not sending notification or
     // updating user object.
     return Promise.resolve(user[timestampFieldName[notificationType]]);
   }

@@ -4,7 +4,7 @@ const sendEmail = async (apiKey, fromEmail, email, message) => {
   var data = JSON.stringify({
     personalizations: [{ to: [{ email: email }] }],
     from: { email: fromEmail },
-    subject: `Boston COVID-19 Vaccine Availability Status Report: ${new Date().toGMTString()}`,
+    subject: `MA COVID-19 Vaccine Availability Status Report: ${new Date().toGMTString()}`,
     content: [{ type: "text/html", value: message }],
   });
 
@@ -121,10 +121,10 @@ const convertHTML = (statuses) => {
       <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB">
       <head>
           <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-          <title>Boston COVID-19 Vaccine Availabilities</title>
+          <title>MA COVID-19 Vaccine Availabilities</title>
           <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
       </head>
-      <h1>Boston COVID-19 Vaccine Availabilities</h1>
+      <h1>MA COVID-19 Vaccine Availabilities</h1>
       <h2>Quick Links</h2>
       <p>
         <a href="https://www.maimmunizations.org/clinic/search?q%5Bservices_name_in%5D%5B%5D=Vaccination&location=&search_radius=All&q%5Bvenue_search_name_or_venue_name_i_cont%5D=fenway&q%5Bclinic_date_gteq%5D=&q%5Bvaccinations_name_i_cont%5D=&commit=Search#search_results"><h3>Fenway Index page</h3></a>
@@ -272,7 +272,7 @@ const processNotification = async (
         }
     }
   } else {
-    // Return old timestamp since we are not sending notitifcation or
+    // Return old timestamp since we are not sending notification or
     // updating user object.
     return Promise.resolve(userInfo[timestampFieldName[notificationType]]);
   }

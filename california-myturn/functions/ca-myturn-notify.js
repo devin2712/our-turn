@@ -320,7 +320,7 @@ const myTurnAvailabilityCheckForLocation = async (
     }
 
     // Let's assume the Pfizer use case with 21 days, although this can be configured via the ENV variable (CA_MYTURN_DOSE_DAYS_BETWEEN).
-    // The only way to programmatically get the correct number of days in betwen (21 vs 28) is to use the Reserve API.
+    // The only way to programmatically get the correct number of days in between (21 vs 28) is to use the Reserve API.
     // We are going to avoid calling the reserve API to avoid abusing the registration system.
     let secondDoseStartDate = new Date();
     secondDoseStartDate.setDate(secondDoseStartDate.getDate() + Number(numOfDaysBetweenDoses));
@@ -387,7 +387,7 @@ const getMyTurnAvailabilities = async (context, user) => {
 
       // Per this quick implementation, if there is a response from myTurnAvailabilityCheckForLocation,
       // we can assume that there are availability entries for dose1 and dose2. But we need to validate 
-      // that at least one date myTurn provides has availabile==true.
+      // that at least one date myTurn provides has available==true.
       // We can assume that all dates in the dose2 availability object are 21 days ahead.
       const availableLocationSlots = {
         locationId: locationStatus.locationId,
@@ -484,7 +484,7 @@ const processNotification = async (
         }
     }
   } else {
-    // Return old timestamp since we are not sending notitifcation or
+    // Return old timestamp since we are not sending notification or
     // updating user object.
     return Promise.resolve(user[timestampFieldName[notificationType]]);
   }
