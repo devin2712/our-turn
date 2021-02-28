@@ -4,9 +4,13 @@
 
 ![Service Diagram](assets/services.png)
 
+## Eligibility
+
+Eligibility is not taken into account during availability checks. Get My Vaccine is aggregating vaccine appointments from CVS, Rite-Aid, and Walgreens. You should ensure you are eligible based on current local rules before setting up a check.
+
 ## GetMyVaccine-specific Details
 
-The API calls are querying the Get My Vaccine website: [Get My Vaccine](https://www.getmyvaccine.org/). Eligibilty is not taken into account during availability checks. Get My Vaccine is aggregating vaccine appointments from CVS, Rite-Aid, and Walgreens.
+The API calls are querying the Get My Vaccine website: [Get My Vaccine](https://www.getmyvaccine.org/). 
 
 ### Data Freshness
 

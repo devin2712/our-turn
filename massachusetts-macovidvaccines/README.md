@@ -6,11 +6,15 @@ Twilio Serverless Function to monitor vaccine appointment availability changes b
 
 ![Service Diagram](assets/services.png)
 
+## Eligibility 
+
+We do not take into patient eligibility as part of the monitoring process. You should ensure you are eligible based on current local rules before setting up a check. If there are restrictions at a location (XYZ residents only, 65+), you can filter them out by specifying only a set of Locations in your `Locations` field but you would need to research the latest restrictions for each location in MA.
+
 ## MA-specific Details
 
-We do not take into account patient eligibility and we are reading statuses directly from [MA Covid Vaccines](https://www.macovidvaccines.com/).
-
 For the `ma-notify` function and db schema, we allow a user to specify a list of the clinic locations they want to monitor. For example, only notify me if an appointment opens up for `"Fenway Park"`. 
+
+Example value for `Locations` field: `["Fenway Park"]`
 
 ## "DB" Schema for MA
 

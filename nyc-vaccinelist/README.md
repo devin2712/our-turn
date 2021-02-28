@@ -4,11 +4,13 @@
 
 ![Service Diagram](assets/services.png)
 
+## Eligbility 
+
+There is no eligibility check as part of the monitoring process, so you would need to ensure you are eligible based on local requirements. Note that some locations for NYC Vaccine List have "65+ only" in the location title. It's best to define a `locations` array for the user, specifying exactly which locations you want to monitor because you can inherently filter out restricted locations based on title (Brooklyn Residents Only, 65+ only, etc.) if they don't apply to you.
+
 ## NYC-specific Details
 
 The API calls are querying the NYC Vaccine List website: [NYC Vaccine List](https://nycvaccinelist.com/)
-
-There is no eligibility check as part of the monitoring process.
 
 ### Dose Preference
 
