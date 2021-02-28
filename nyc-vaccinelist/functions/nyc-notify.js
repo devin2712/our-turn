@@ -56,9 +56,15 @@ const callTwilio = async (
   const locations = statuses.map((loc) => loc.name);
 
   // NYC has many locations so just truncating to the first few over the phone.
-  let locationSlice = locations.slice(0, 5);
-  if (locationSlice.length > 1) {
-    locationSlice.splice(locations.length - 1, 0, "and");
+  let locationSlice;
+  if (locations.length > 3) {
+    locationSlice = locations.slice(0, 3);
+    locationSlice.splice(locationSlice.length, 0, `and ${locations.length - 3} other locations.`);
+  } else if (locations.length > 1) {
+    locationSlice = locations;
+    locationSlice.splice(locationSlice.length - 1, 0, "and");
+  } else {
+    locationSlice = locations;
   }
 
   const locationPhrase =
