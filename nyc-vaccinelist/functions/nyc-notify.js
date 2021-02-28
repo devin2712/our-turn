@@ -76,7 +76,7 @@ const callTwilio = async (
 };
 
 // Converts an array of availabilities into a basic HTML email for display
-const convertHTML = (statuses) => {
+const convertHTML = (user, statuses) => {
   let locationBlocks = "";
 
   statuses.forEach((location) => {
@@ -99,6 +99,8 @@ const convertHTML = (statuses) => {
         `;
   });
 
+  const locationPreferencePhrase = (user.locations && JSON.parse(user.locations).length > 0) ? "the following locations: " + JSON.parse(user.locations).join(', ') : "any available locations.";
+
   return `
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
       <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB">
@@ -107,8 +109,15 @@ const convertHTML = (statuses) => {
           <title>NYC COVID-19 Vaccine Availabilities</title>
           <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
       </head>
-      <h1>NYC COVID-19 Vaccine Availabilities</h1>
+      <h1>NYC COVID-19 Vaccine Availabilities for ${user.name}</h1>
+      <h2>Check NYC Vaccine List for more info: <a href="https://nycvaccinelist.com/">https://nycvaccinelist.com/</a></h2>
+      <p>We looked at availabilites for ${locationPreferencePhrase}</p>
+
       ${locationBlocks}
+
+      <hr>
+      <small>Based on your user preferences, we will not e-mail you again for another ${user.min_email_threshold} minutes, even if more availabilities open up.</small>
+
     </html>
   `;
 };
@@ -203,7 +212,7 @@ const processNotification = async (
             context.SENDGRID_API_KEY,
             context.SENDGRID_SENDER,
             user.email.trim(),
-            convertHTML(userLocationAvailabilities)
+            convertHTML(user, userLocationAvailabilities)
           );
           return Promise.resolve(new Date().toISOString());
         } else {
