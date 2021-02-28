@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Amy-Neural">Hey {{name}}, There are COVID-19 vaccine appointments available at: {{locations}}. Please check your e-mail for updates.</Say>
+  <Say voice="Polly.Amy-Neural">Hey {{name}}, There are COVID-19 vaccine appointments available at <break strength="strong" /> {{locations}}. Please check your e-mail for updates.</Say>
 </Response>
