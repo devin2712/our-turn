@@ -12,7 +12,9 @@ California MyTurn System: [`california-myturn/`](./california-myturn)
 
 Massachusetts Covid Vaccines: [`massachusetts-macovidvaccines/`](./massachusetts-macovidvaccines)
 
-NYC Vaccine List: [`nyc-vaccinelist/`](./nyc-vaccinelist)
+NYC Vaccine List (NYC Only): [`nyc-vaccinelist/`](./nyc-vaccinelist)
+
+Get My Vaccine (CVS, Rite-Aid, Walgreens): [`getmyvaccine/`](./getmyvaccine)
 
 The architecture and processes defined in this document are shared and common between the sub-projects.
 
@@ -102,7 +104,7 @@ From the Twilio blog, I went with cronhooks.io from their recommended list of ea
 - Set up your environment variables (Twilio ACCOUNT SID and AUTH_TOKEN should automatically be present). Refer to the sample `.env` file in each subproject. You'll need to add Airtable API keys + Base API Endpoint, SendGrid API Key + Sender Email Address, and Twilio Phone Number (your dedicated purchased number) + Twilio TwiML Bin.
 - Add `axios` and `cheerio` dependencies in the function settings.
    - `axios` is used to make the API calls but the code can be refactored to just use native `fetch`
-   - `cheerio` is used only in the NYC variant as we need to parse the DOM of the nycvaccinelist index page, as there is no reliable JSON endpoint (the API endpoint changes with each Vercel/Next deploy)
+   - `cheerio` is used only in the NYC and GetMyVaccine variants as we need to parse the DOM of the nycvaccinelist index page, as there is no reliable JSON endpoint (the API endpoint changes with each Vercel/Next deploy)
 
 - Create new TwiML bin with the sample XML file in the sub-project. This is used to programmatically control what the automated voice says when the user picks up the phone call - you can modify this to customize to your needs.
 
@@ -146,6 +148,9 @@ curl --location --request GET 'http://localhost:3000/ca-myturn-notify'
 ```
 ```
 curl --location --request GET 'http://localhost:3000/nyc-notify'
+```
+```
+curl --location --request GET 'http://localhost:3000/gmv-notify'
 ```
 
 The cURL command should just return a basic "Success" payload
