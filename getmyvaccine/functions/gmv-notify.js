@@ -91,6 +91,8 @@ const convertHTML = (user, statuses) => {
     `;
   });
 
+  const storePreferencePhrase = (user.store_preference && JSON.parse(user.store_preference).length > 0) ? `Based on your user preference, we are only monitoring the following stores: ${JSON.parse(user.store_preference).join(", ")}`: "Based on your user preference, we are monitoring all retailers (CVS, Rite-Aid, and Walgreens)"; 
+
   return `
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
       <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB">
@@ -99,9 +101,14 @@ const convertHTML = (user, statuses) => {
           <title>Retail Pharmacy COVID-19 Vaccine Availabilities</title>
           <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
       </head>
-      <h1>Retail Pharmacy COVID-19 Vaccine Availabilities</h1>
+      <h1>Retail Pharmacy COVID-19 Vaccine Availabilities for ${user.name}</h1>
       <h2>Check GetMyVaccine for more info: <a href="https://www.getmyvaccine.org/zips/${user.zipcode}">https://www.getmyvaccine.org/zips/${user.zipcode}</a></h2>
+      <p>We detected new availabilities for pharmacies within <strong>${user.distance} miles</strong> from <strong>${user.zipcode}</strong>. ${storePreferencePhrase}</p>
       ${locationBlocks}
+
+      <hr>
+      <small>Based on your user preferences, we will not e-mail you again for another ${user.min_email_threshold} minutes, even if more availabilities open up.</small>
+
     </html>
   `;
 };
@@ -341,7 +348,7 @@ const processUser = async (timestamp, context, user) => {
     consolidatedLocations,
     "EMAIL"
   );
-  
+
   // // Update the user's last emailed timestamp based on the result of processNotification
   user.last_email = emailTimestamp;
 
