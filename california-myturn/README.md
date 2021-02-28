@@ -47,3 +47,17 @@ Alameda, Alpine, Amador, Berkeley, Butte, Calaveras, Colusa, Contra Costa, Del N
 #### `industry` values
 
 "Chemical and hazardous materials", "Communications and IT", "Critical manufacturing", "Defense", "Education and childcare", "Emergency services", "Energy", "Financial services", "Food and Agriculture", "Government operations / community based essential functions", "Healthcare Worker", "Industrial, commercial, residential, and sheltering facilities and services", "Retired", "Transportation and logistics", "Unemployed", "Water and wastewater", "Other"
+
+#### `lat` and `long` values
+
+Cheat sheet of values for some cities:
+| City      | Lat | Long |
+| ----------- | ----------- | ----------- |
+| Berkeley      | `37.8715226`       | `-122.273042` |
+| Long Beach      | `33.7700504`       | `-118.1937395` |
+| Los Angeles      | `34.052234`       | `-118.243685` |
+| Oakland      | `37.746080`       | `122.195133` |
+| San Jose      | `37.3382082`       | `-121.8863286` |
+| San Diego      | `32.715738`       | `-117.1610838` |
+| San Francisco      | `37.7749295`       | `-122.4194155` |
+
