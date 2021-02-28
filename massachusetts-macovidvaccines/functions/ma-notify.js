@@ -289,7 +289,7 @@ const processUsers = async (context, users, vaxData, timestamp) => {
   const userPromises = users.map(async (user) => {
     const userInfo = user.fields;
 
-    const userDesiredLocations = JSON.parse(userInfo.Locations);
+    const userDesiredLocations = userInfo.Locations ? JSON.parse(userInfo.Locations) : [];
     const userLocationAvailabilities = filterLocations(
       context,
       userDesiredLocations,
