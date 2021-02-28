@@ -23,8 +23,8 @@ Since MyTurn schedules both the first dose and second dose at the same time, we 
 There is a ENV variable `CA_MYTURN_DOSE_DAYS_BETWEEN` specifically to calculate the dates between the two doses. We default to 21 for Pfizer, but this can be configured to 28 for Moderna if you know which vaccine is being administered.
 
 The way we search for availabilities is:
-1) Check if there are any availabilities for the first dose from today's date => 2 months ahead.
-2) If there are availabilities for first dose, search for openings (21 days from today's date) => 2 months ahead. 
+1) Check if there are any availabilities for the first dose from today's date to a date 2 months ahead.
+2) If there are availabilities for the first dose, search for openings (21 days from today's date) up to 2 months ahead. 
      - (_Appointment availability for the second dose tomorrow is not useful to you because you need to wait at least 21 days._)
 3) If there are availabilities for the second dose in that adjusted date range, only then will we send out a notification.
 
