@@ -2,6 +2,9 @@
 
 ![Get COVID-19 Vaccine Notifications using Twilio Serverless Functions](banner.png)
 
+## Getting Started
+For a step-by-step guide on how to get setup, check out the [setup guide](https://ddxdevin.medium.com/build-a-covid-19-vaccine-appointment-notification-system-with-a-twilio-serverless-function-23cf328c01f4).
+
 ## Projects
 
 There are multiple variations depending on the state or vaccination repository being monitored. Navigate to the sub-project's README for more information:
