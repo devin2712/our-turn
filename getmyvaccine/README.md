@@ -10,7 +10,7 @@ The API calls are querying the Get My Vaccine website: [Get My Vaccine](https://
 
 ### Data Freshness
 
-GetMyVaccine is monitoring retail pharmacy websites and stores a timestamp for when they last checked the retail pharmacy's status. Use the `data_freshness` field in the User object to specify a preference to only filter by location availabilities if the data is within X minutes old. If `data_freshness` is set to `5`, we will filter GetMyVaccine's results to only look at results that show CVS/Rite-Aid/Walgreens had availabilities as of 5 minutes prior to the function invocation. 
+GetMyVaccine is monitoring retail pharmacy websites and stores a timestamp for when they last checked the retail pharmacy's status. Use the `data_freshness` field in the User object to specify a preference to only filter by location availabilities if the data was recently updated wtihin X minutes. If `data_freshness` is set to `5`, we will filter GetMyVaccine's results to only look at results that show CVS/Rite-Aid/Walgreens had availabilities as of 5 minutes prior to the function invocation. 
 
 Empty value for `data_freshness` will not filter any results. Recommendation is to set this field to a value like `5` to avoid triggering on stale collection data.
 
