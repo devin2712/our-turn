@@ -315,15 +315,24 @@ const myTurnAvailabilityCheckForLocation = async (
     });
 
     // Break out early if no availability 
-    if (!dose1Response.data.availability || dose1Response.data.availability.length === 0) {
+    if (!dose1Response.data.availability || dose1Response.data.availability.length === 0 || dose1Response.data.availability.filter((a) => a.available).length === 0) {
       return {};
     }
 
     // Let's assume the Pfizer use case with 21 days, although this can be configured via the ENV variable (CA_MYTURN_DOSE_DAYS_BETWEEN).
     // The only way to programmatically get the correct number of days in between (21 vs 28) is to use the Reserve API.
     // We are going to avoid calling the reserve API to avoid abusing the registration system.
-    let secondDoseStartDate = new Date();
+    // 
+    // Assume that the seed date is the min date from the dose 1 response
+    const firstAvailableFirstDoseDate = new Date(dose1Response.data.availability.filter((a) => a.available)[0].date)
+
+    // Offset JS date timezone issue to ensure the DAY is correct
+    const normalizedFirstDate = new Date(firstAvailableFirstDoseDate.getTime() - firstAvailableFirstDoseDate.getTimezoneOffset() * -60000)
+
+    // Add the number of days in between doses to the first-available first-dose appointment date.
+    let secondDoseStartDate = new Date(normalizedFirstDate);
     secondDoseStartDate.setDate(secondDoseStartDate.getDate() + Number(numOfDaysBetweenDoses));
+
     const dose2Response = await axios({
       method: "post",
       url: `https://api.myturn.ca.gov/public/locations/${locationId}/availability`,
