@@ -57,7 +57,7 @@ User Object
 ### Eligibility Acceptable Values
 
 #### `age_range` values
-`"18 - 49"`, `"50 - 64"`, `"65 - 74"`, `"75 and older"`
+`"16 - 49"`, `"50 - 64"`, `"65 - 74"`, `"75 and older"`
 
 #### `county` values
 Alameda, Alpine, Amador, Berkeley, Butte, Calaveras, Colusa, Contra Costa, Del Norte, El Dorado, Fresno, Glenn, Humboldt, Imperial, Inyo, Kern, Kings, Lake, Lassen, Long Beach, Los Angeles, Madera, Marin, Mariposa, Mendocino, Merced, Modoc, Mono, Monterey, Napa, Nevada, Orange, Pasadena, Placer, Plumas, Riverside, Sacramento, San Benito, San Bernardino, San Diego, San Francisco, San Joaquin, San Luis Obispo, San Mateo, Santa Barbara, Santa Clara, Santa Cruz, Shasta, Sierra, Siskiyou, Solano, Sonoma, Stanislaus, Sutter, Tehama, Trinity, Tulare, Tuolumne, Ventura, Yolo, Yuba
