@@ -300,9 +300,9 @@ const myTurnAvailabilityCheckForLocation = async (
 
   try {
     // CA MyTurn will attempt to book both dose appointments during the registration process.
-    // We should only send a notification that it's possible to book in the system if there are availables:
+    // We should only send a notification that it's possible to book in the system if there are availabilities:
     //    1) From today onwards for dose 1
-    //    2) From (today+21 days) onwards for dose 2
+    //    2) From <the first available first dose date> + 21 days) onwards
     // 
     // If there are only availabilities for the first dose but you can't book the second dose, then don't send notification.
     const dose1Response = await axios({
