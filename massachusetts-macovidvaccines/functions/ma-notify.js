@@ -87,7 +87,7 @@ const filterLocations = (context, locations, results) => {
       })
       .filter((obj) => obj);
   } else {
-    return null;
+    return [];
   }
 };
 
