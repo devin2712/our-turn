@@ -357,7 +357,7 @@ const getGMVData = async (zipcode) => {
 
 const processUser = async (timestamp, context, user) => {
   // If time thresholds haven't been met for neither phone nor email, don't even attempt to fetch data.
-  if (!shouldFetchData(timestamp, user)) {
+  if (!shouldFetchData(timestamp, user) && !context.DEBUG_MODE) {
     return Promise.resolve(null)
   }
 
