@@ -233,9 +233,11 @@ const processNotification = async (
 
   const hasAvailabilities = userLocationAvailabilities.length > 0;
 
-  // If user timestamp is undefined, send a notification (can happen during initialization use case; very first notification)
-  // If user timestamp is defined, compare with threshold preference.
-  const timeThresholdMet = !userTimeStamp || (deltaInMinutes(userTimeStamp) > userThreshold);
+  // If user timestamp is undefined, we've never sent them a notification, so send them a notification now for the first time.
+  // If user threshold is undefined, send a notification as there is no preference to back off successive notifications.
+  //
+  // If user threshold is defined and we've sent them a notification before, compare with threshold preference to ensure time difference.
+  const timeThresholdMet = !userThreshold || !userTimeStamp || (deltaInMinutes(userTimeStamp) > userThreshold);
 
   // Trigger notification if time window threshold has been met and there are availabilities.
   if ((hasAvailabilities && timeThresholdMet) || (context.DEBUG_MODE === "true")) {

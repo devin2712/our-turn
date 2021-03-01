@@ -57,7 +57,7 @@ const callTwilio = async (
 
   let locationSlice;
   if (locations.length > 3) {
-    locationSlice = locations.slice(0,3);
+    locationSlice = locations.slice(0, 3);
     locationSlice.splice(locationSlice.length, 0, `and ${locations.length - 3} other locations.`);
   } else if (locations.length > 1) {
     locationSlice = locations;
@@ -69,7 +69,7 @@ const callTwilio = async (
   // Read out only the first few
   const locationPhrase = encodeURIComponent(locationSlice.join(", "));
   const datesPhrase = encodeURIComponent(numOfSlots === 1 ? 'is 1 date' : `are ${numOfSlots} dates`);
-  const locationCountPhrase = encodeURIComponent(statuses.length === 1 ? "1 location": `${statuses.length} locations`);
+  const locationCountPhrase = encodeURIComponent(statuses.length === 1 ? "1 location" : `${statuses.length} locations`);
 
   try {
     return await twilioClient.calls.create({
@@ -348,7 +348,42 @@ const myTurnAvailabilityCheckForLocation = async (
   }
 };
 
-const getMyTurnAvailabilities = async (context, user) => {
+// Quick optimization to not fetch data unless we need to. 
+// If neither timestamps (phone/email) have met their time thresholds, skip this user.
+const shouldFetchData = (timestamp, user) => {
+  // if no email defined  => email not eligible
+  //
+  // if email defined AND no min_email_threshold defined => email eligible (always send email because no threshold is defined)
+  // if email defined AND no last_email defined => eligible (we've never sent them an email)
+  // if email defined AND min_email_threshold defined
+  //    AND     time - last_email > threshold   => eligible (we've sent them email + enough time has passed)
+  const emailEligible = user.email !== undefined && (
+    (!user[thresholdFieldName['EMAIL']] || (Math.round(
+      (timestamp.getTime() -
+        new Date(user[timestampFieldName['EMAIL']])) /
+      60000
+    )) >= user[thresholdFieldName['EMAIL']]) || !user[timestampFieldName['EMAIL']]
+  );
+
+  // if no phone defined  => phone not eligible
+  //
+  // if phone defined AND no min_phone_threshold defined => phone eligible (always call phone because no threshold is defined)
+  // if phone defined AND no last_phone defined => eligible (we've never sent them an phone)
+  // if phone defined AND min_phone_threshold defined
+  //    AND     time - last_phone > threshold   => eligible (we've sent them phone + enough time has passed)
+  const phoneEligible = user.phone !== undefined && (
+    (!user[thresholdFieldName['PHONE']] || (Math.round(
+      (timestamp.getTime() -
+        new Date(user[timestampFieldName["PHONE"]])) /
+      60000
+    )) >= user[thresholdFieldName['PHONE']]) || !user[timestampFieldName['PHONE']]
+  );
+
+  // If either are eligible, then we should fetch data and attempt to find appointments.
+  return emailEligible || phoneEligible;
+}
+
+const getMyTurnAvailabilities = async (timestamp, context, user) => {
   const vaccineData = await myTurnEligibilityCheck(user);
 
   // If vaccineData is an empty string, it means user is not eligible yet.
@@ -445,9 +480,11 @@ const processNotification = async (
 
   const hasAvailabilities = userLocationAvailabilities.length > 0;
 
-  // If user timestamp is undefined, send a notification (can happen during initialization use case; very first notification)
-  // If user timestamp is defined, compare with threshold preference.
-  const timeThresholdMet = !userTimeStamp || (deltaInMinutes(userTimeStamp) > userThreshold);
+  // If user timestamp is undefined, we've never sent them a notification, so send them a notification now for the first time.
+  // If user threshold is undefined, send a notification as there is no preference to back off successive notifications.
+  //
+  // If user threshold is defined and we've sent them a notification before, compare with threshold preference to ensure time difference.
+  const timeThresholdMet = !userThreshold || !userTimeStamp || (deltaInMinutes(userTimeStamp) > userThreshold);
 
   if (
     (hasAvailabilities && timeThresholdMet) ||
@@ -510,7 +547,12 @@ const processUsers = async (context, users, timestamp) => {
 };
 
 const processUser = async (timestamp, context, user) => {
-  const results = await getMyTurnAvailabilities(context, user);
+  // If time thresholds haven't been met for neither phone nor email, don't even attempt to fetch data.
+  if (!shouldFetchData(timestamp, user)) {
+    return Promise.resolve(null);
+  }
+
+  const results = await getMyTurnAvailabilities(timestamp, context, user);
 
   // Process Email Notification
   // emailTimestamp will either

@@ -91,7 +91,7 @@ const convertHTML = (user, statuses) => {
     `;
   });
 
-  const storePreferencePhrase = (user.store_preference && JSON.parse(user.store_preference).length > 0) ? `Based on your user preference, we are only monitoring the following stores: ${JSON.parse(user.store_preference).join(", ")}`: "Based on your user preference, we are monitoring all retailers (CVS, Rite-Aid, and Walgreens)"; 
+  const storePreferencePhrase = (user.store_preference && JSON.parse(user.store_preference).length > 0) ? `Based on your user preference, we are only monitoring the following stores: ${JSON.parse(user.store_preference).join(", ")}` : "Based on your user preference, we are monitoring all retailers (CVS, Rite-Aid, and Walgreens)";
 
   return `
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -187,9 +187,11 @@ const processNotification = async (
 
   const hasAvailabilities = Object.entries(userLocationAvailabilities).length > 0;
 
-  // If user timestamp is undefined, send a notification (can happen during initialization use case; very first notification)
-  // If user timestamp is defined, compare with threshold preference.
-  const timeThresholdMet = !userTimeStamp || (deltaInMinutes(userTimeStamp) > userThreshold);
+  // If user timestamp is undefined, we've never sent them a notification, so send them a notification now for the first time.
+  // If user threshold is undefined, send a notification as there is no preference to back off successive notifications.
+  //
+  // If user threshold is defined and we've sent them a notification before, compare with threshold preference to ensure time difference.
+  const timeThresholdMet = !userThreshold || !userTimeStamp || (deltaInMinutes(userTimeStamp) > userThreshold);
 
   if (
     (hasAvailabilities && timeThresholdMet) ||
@@ -301,6 +303,42 @@ const filterResultsForUser = (results, user, timestamp) => {
     });
 };
 
+// Quick optimization to not fetch data unless we need to. 
+// If neither timestamps (phone/email) have met their time thresholds, skip this user.
+const shouldFetchData = (timestamp, user) => {
+  // if no email defined  => email not eligible
+  //
+  // if email defined AND no min_email_threshold defined => email eligible (always send email because no threshold is defined)
+  // if email defined AND no last_email defined => eligible (we've never sent them an email)
+  // if email defined AND min_email_threshold defined
+  //    AND     time - last_email > threshold   => eligible (we've sent them email + enough time has passed)
+  const emailEligible = user.email !== undefined && (
+    (!user[thresholdFieldName['EMAIL']] || (Math.round(
+      (timestamp.getTime() -
+        new Date(user[timestampFieldName['EMAIL']])) /
+      60000
+    )) >= user[thresholdFieldName['EMAIL']]) || !user[timestampFieldName['EMAIL']]
+  );
+
+  // if no phone defined  => phone not eligible
+  //
+  // if phone defined AND no min_phone_threshold defined => phone eligible (always call phone because no threshold is defined)
+  // if phone defined AND no last_phone defined => eligible (we've never sent them an phone)
+  // if phone defined AND min_phone_threshold defined
+  //    AND     time - last_phone > threshold   => eligible (we've sent them phone + enough time has passed)
+  const phoneEligible = user.phone !== undefined && (
+    (!user[thresholdFieldName['PHONE']] || (Math.round(
+      (timestamp.getTime() -
+        new Date(user[timestampFieldName["PHONE"]])) /
+      60000
+    )) >= user[thresholdFieldName['PHONE']]) || !user[timestampFieldName['PHONE']]
+  );
+
+  // If either are eligible, then we should fetch data and attempt to find appointments.
+  return emailEligible || phoneEligible;
+}
+
+
 const getGMVData = async (zipcode) => {
   try {
     return await axios({
@@ -318,6 +356,10 @@ const getGMVData = async (zipcode) => {
 }
 
 const processUser = async (timestamp, context, user) => {
+  // If time thresholds haven't been met for neither phone nor email, don't even attempt to fetch data.
+  if (!shouldFetchData(timestamp, user)) {
+    return Promise.resolve(null)
+  }
 
   // Get GMV Vaccine data based on user preferences
   const results = await getGMVData(user.zipcode);
