@@ -1,5 +1,7 @@
 # Covid-19 Vaccine Appointment Notification System: GetMyVaccine (CVS, Rite-Aid, Walgreens)
 
+For a step-by-step guide on how to get setup, check out the [setup guide](https://ddxdevin.medium.com/build-a-covid-19-vaccine-appointment-notification-system-with-a-twilio-serverless-function-23cf328c01f4).
+
 ## Overview
 
 ![Service Diagram](assets/services.png)
