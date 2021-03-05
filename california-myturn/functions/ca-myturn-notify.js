@@ -208,6 +208,11 @@ const myTurnEligibilityCheck = async (user) => {
         type: "single-select",
       },
       {
+        id: "q.screening.underlying.health.condition",
+        value: "Yes",
+        type: "single-select",
+      },
+      {
         id: "q.screening.accessibility.code",
         type: "text",
       },
